@@ -4,9 +4,9 @@ import (
 	"errors"
 	"fmt"
 
-	"gopkg.in/urfave/cli.v1"
 	"github.com/codegangsta/envy/lib"
-	"github.com/codegangsta/gin/lib"
+	"github.com/smacker/gin/lib"
+	"gopkg.in/urfave/cli.v1"
 
 	"log"
 	"os"
@@ -63,6 +63,11 @@ func main() {
 			Value: &cli.StringSlice{},
 			Usage: "Relative directories to exclude",
 		},
+		cli.StringFlag{
+			Name:  "mainPath,mt",
+			Value: ".",
+			Usage: "Path to build from",
+		},
 		cli.BoolFlag{
 			Name:  "immediate,i",
 			Usage: "run the server immediately after it's built",
@@ -107,7 +112,13 @@ func MainAction(c *cli.Context) {
 		logger.Fatal(err)
 	}
 
-	builder := gin.NewBuilder(c.GlobalString("path"), c.GlobalString("bin"), c.GlobalBool("godep"), wd)
+	builder := gin.NewBuilder(
+		c.GlobalString("path"),
+		c.GlobalString("bin"),
+		c.GlobalBool("godep"),
+		wd,
+		c.GlobalString("mainPath"),
+	)
 	runner := gin.NewRunner(filepath.Join(wd, builder.Binary()), c.Args()...)
 	runner.SetWriter(os.Stdout)
 	proxy := gin.NewProxy(builder, runner)
